@@ -13,24 +13,31 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private final int Screen_Width = 600;
     private final int Screen_Height = 600;
-    private final int Unit_Size = 25;
+    private final int Unit_Size = 25;      //yılan her adımda 25 piksel hareket edecek
 
     private  int location_x = 200;
     private  int location_y = 200;
 
-    private final int delay = 75;
+    private final int delay = 75;    // her 75 milisaniye de actionPerformed metodu tetikleniyor
     Timer timer;
 
     char direction = 'R';
 
+    Food food;
+
     public GamePanel(){
 
-        this.setPreferredSize(new Dimension(Screen_Height,Screen_Width));
+        this.setPreferredSize(new Dimension(Screen_Width,Screen_Height));
         this.setBackground(new Color(6, 67, 10));
         this.setFocusable(true);
 
         timer = new Timer(delay, this);   //this -> Yani bu sınıf içindeki actionPerformed
+        this.addKeyListener(new MyKeyAdapter());
+        this.requestFocusInWindow();
         timer.start();
+
+        food = new Food();
+        food.generateNewPosition(Screen_Width, Screen_Height, Unit_Size);
     }
 
     @Override
@@ -54,14 +61,29 @@ public class GamePanel extends JPanel implements ActionListener {
 
         }
 
+        checkFood();
 
         repaint();     //koordinatlar değişti, paintComponent'i tekrar çalıştır der
     } 
 
     public void draw(Graphics g){
-        g.setColor(Color.black);
 
+        g.setColor(Color.GRAY); // Izgara çizgileri gri olsun
+        for(int i = 0; i < Screen_Width / Unit_Size; i++) {
+        g.drawLine(i * Unit_Size, 0, i * Unit_Size, Screen_Height); // Dikey çizgiler
+        g.drawLine(0, i * Unit_Size, Screen_Width, i * Unit_Size); // Yatay çizgiler
+        }
+
+
+
+        g.setColor(Color.RED);
+        g.fillOval(food.x, food.y, Unit_Size, Unit_Size);
+
+        g.setColor(Color.black);
         g.fillRect(location_x, location_y, Unit_Size, Unit_Size);
+
+        
+
     }
 
 
@@ -99,6 +121,13 @@ public class GamePanel extends JPanel implements ActionListener {
                 break;
             }
      } 
+
+    }
+
+    public void checkFood(){
+        if((food.x == location_x) &&(food.y == location_y)){
+            food.generateNewPosition(Screen_Width, Screen_Height, Unit_Size);
+        }
 
     }
 
