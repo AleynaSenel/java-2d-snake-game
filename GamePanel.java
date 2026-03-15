@@ -23,6 +23,7 @@ public class GamePanel extends JPanel implements ActionListener {
     int[] location_y = new int[maxUnitSize];
 
     int bodyParts = 1;
+    boolean running = true;
 
     private final int delay = 75;    // her 75 milisaniye de actionPerformed metodu tetikleniyor
     Timer timer;
@@ -30,6 +31,7 @@ public class GamePanel extends JPanel implements ActionListener {
     char direction = 'R';
 
     Food food;
+    
 
     public GamePanel(){
 
@@ -47,15 +49,16 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     @Override
-    public void paintComponent(Graphics g){
-        super.paintComponent(g);
+    public void paintComponent(Graphics g){   //ekranı temizle ve arka planı boya
+        super.paintComponent(g);              // JPanel'in metodu o yüzden super kullandık
         draw(g);
     }
    
       
     @Override
-    public void actionPerformed(ActionEvent e){   //bizim Timer'ımızın her 75 milisaniyede bir tetikleyeceği yerdir
-
+    public void actionPerformed(ActionEvent e){   //bizim Timer'ımızın her 75 milisaniyede bir tetikleyeceği yerdir.Game Loop buradadır.
+        if(running){
+        
         System.out.println("Zaman isliyor, oyun dongusu calisiyor!");
 
         move();
@@ -69,17 +72,18 @@ public class GamePanel extends JPanel implements ActionListener {
 
         }
 
-        
         checkFood();
+        checkCollisions();
+    
+        }
+        repaint();  //koordinatlar değişti, paintComponent'i tekrar çalıştır der
         
-
-        repaint();     //koordinatlar değişti, paintComponent'i tekrar çalıştır der
     } 
 
     public void draw(Graphics g){
 
         g.setColor(Color.GRAY); // Izgara çizgileri gri olsun
-        
+
         for(int i = 0; i < Screen_Width / Unit_Size; i++) {
         g.drawLine(i * Unit_Size, 0, i * Unit_Size, Screen_Height); // Dikey çizgiler
         g.drawLine(0, i * Unit_Size, Screen_Width, i * Unit_Size); // Yatay çizgiler
@@ -145,8 +149,9 @@ public class GamePanel extends JPanel implements ActionListener {
         if((food.x == location_x[0]) && (food.y == location_y[0])){
             food.generateNewPosition(Screen_Width, Screen_Height, Unit_Size);
             bodyParts++;
+          
         }
-
+        
     }
 
     public void move(){
@@ -154,6 +159,26 @@ public class GamePanel extends JPanel implements ActionListener {
             location_x[k] = location_x[k-1];
             location_y[k] = location_y[k-1];
         }
+    }
+
+    public void checkCollisions(){
+        for(int j = 1; j < bodyParts; j++ ){
+            if(location_x[j] == location_x[0] && location_y[j] == location_y[0]){   //yılan kendi vücuduna değerse oyun durur
+                running = false;
+            }
+        }
+
+        if(location_x[0] < 0 ) running = false;    //sol duvar
+        if(location_x[0] >= Screen_Width)  running = false;  //sağ duvar
+        if(location_y[0] < 0 )  running = false;    //üst duvar
+        if( location_y[0] >= Screen_Height) running = false;  //alt duvar
+
+       
+        if (!running) {
+        timer.stop();    //zaman durursa oyun durur
+        }
+    
+        
     }
 
 
