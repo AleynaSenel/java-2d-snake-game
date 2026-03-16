@@ -1,5 +1,7 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,7 +33,7 @@ public class GamePanel extends JPanel implements ActionListener {
     char direction = 'R';
 
     Food food;
-    
+    int foodEaten = 0;
 
     public GamePanel(){
 
@@ -51,7 +53,11 @@ public class GamePanel extends JPanel implements ActionListener {
     @Override
     public void paintComponent(Graphics g){   //ekranı temizle ve arka planı boya
         super.paintComponent(g);              // JPanel'in metodu o yüzden super kullandık
-        draw(g);
+        if(running){
+            draw(g);
+        }else{
+            gameOver(g);
+        }
     }
    
       
@@ -103,8 +109,11 @@ public class GamePanel extends JPanel implements ActionListener {
             g.fillRect(location_x[i], location_y[i], Unit_Size, Unit_Size);
         }
 
-        
+        g.setColor(Color.white);
+        g.setFont(new Font("Ink Free",Font.BOLD,40));
+        g.drawString("Skor: " + foodEaten, (Screen_Width - 150) / 2, 50);
 
+        
     }
 
 
@@ -141,7 +150,15 @@ public class GamePanel extends JPanel implements ActionListener {
                    }
                 break;
             }
-     } 
+
+            // Eğer oyun çalışmıyorsa ve basılan tuş Boşluk (Space) ise
+            if (!running && e.getKeyCode() == java.awt.event.KeyEvent.VK_SPACE) {
+                resetGame();
+                repaint(); // Ekranı hemen yenile
+            }
+        } 
+
+        
 
     }
 
@@ -149,6 +166,7 @@ public class GamePanel extends JPanel implements ActionListener {
         if((food.x == location_x[0]) && (food.y == location_y[0])){
             food.generateNewPosition(Screen_Width, Screen_Height, Unit_Size);
             bodyParts++;
+            foodEaten++;
           
         }
         
@@ -181,7 +199,38 @@ public class GamePanel extends JPanel implements ActionListener {
         
     }
 
+    public void gameOver(Graphics g) {
+    
+        g.setColor(Color.white);
+        g.setFont(new Font("Ink Free", Font.BOLD, 40));
+        g.drawString("Skor: " + foodEaten, (Screen_Width - 150) / 2, 50);
 
+       
+        g.setColor(Color.RED);
+        g.setFont(new Font("Ink Free", Font.BOLD, 75));
+        g.drawString("OYUN BİTTİ", (Screen_Width - 450) / 2, Screen_Height / 2);
+
+        g.setColor(Color.WHITE); // Rengi beyaza çevir
+        g.setFont(new Font("Ink Free", Font.BOLD, 20)); // Boyutu 20'ye küçült
+    
+            
+        FontMetrics metrics2 = getFontMetrics(g.getFont()); 
+        String text = "Yeniden Baslamak Icin SPACE Tusuna Basin";
+        int x = (Screen_Width - metrics2.stringWidth(text)) / 2; 
+            
+        g.drawString(text, x, 400);
+    }
+
+    public void resetGame() {
+        bodyParts = 1;
+        foodEaten = 0;
+        direction = 'R';
+        location_x[0] = 200; 
+        location_y[0] = 200;
+        running = true;
+        food.generateNewPosition(Screen_Width, Screen_Height, Unit_Size); 
+        timer.start(); // Duran zamanlayıcıyı tekrar çalıştır
+    }
 
     
     
